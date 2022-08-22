@@ -3,14 +3,29 @@ package com.company;
 public class Main {
 
     public static void main(String[] args) {
-        Blockchain chain = new Blockchain();
-        Block block1 = chain.create("Utu Kaita has bought 1 utu.");
-        chain.add(block1);
-        Block block2 = chain.create("Utu Kaita has sold 1 utu.");
-        chain.add(block2);
-        Block block3 = chain.create("Elon Musk has bought 1000000 utu from Utu Kaita.");
-        chain.add(block3);
-        for (int i = 0; i < chain.getLength(); i++)
-            System.out.println(chain.blockchain.get(i));
+        final int block_count = 300;
+        final int miner_count = 12;
+        final int privateMiner_count = 8;
+        final int malevolentRatio = 0;
+        final int privateMalevolentRatio = 0;
+        final String name = "public";
+        final String privateName = "private";
+        Blockchain chain = new Blockchain(block_count, miner_count, privateMiner_count, malevolentRatio, name);
+        Blockchain privateChain = new Blockchain(block_count, privateMiner_count, miner_count, privateMalevolentRatio, privateName);
+        chain.start();
+        privateChain.start();
+        try {
+            chain.join();
+            privateChain.join();
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        }
+        chain.traverse(chain.getRoot());
+        System.out.println(chain);
+        privateChain.traverse(privateChain.getRoot());
+        System.out.println(privateChain);
+
+
+
     }
 }

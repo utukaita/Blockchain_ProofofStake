@@ -1,51 +1,66 @@
 package com.company;
 
-import java.io.UnsupportedEncodingException;
+
 import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+import java.util.Random;
 
 public class Block {
-
-    private static Logger logger = Logger.getLogger(Block.class.getName());
 
     private String hash;
     private String previousHash;
     private String data;
     private long timeStamp;
     private int validator;
+    private int miner;
 
-    public Block(String data, String previousHash, long timeStamp, int validator) {
-        this.data = data;
-        this.previousHash = previousHash;
-        this.timeStamp = timeStamp;
-        this.validator = validator;
-        this.hash = calculateBlockHash();
+    private Block previous;
+
+    private Block next;
+
+    public Block() {
     }
 
+    public boolean mined(){
+        String prev = "0", hashLocal = "0";
+        if (previous!=null) prev = previous.hash;
+        if(hash!=null) hashLocal = hash;
+        if (validator == miner
+                && prev == previousHash
+                && hashLocal.equals(calculateBlockHash())
+                && dataValid())
+        {
+            return true;
+        }
+        else {
+            return false;
+        }
+    }
+    public boolean dataValid(){
+        // Could be made more advanced but testing double spending is not the topic of the study
+        // Currently a mere abstraction for distinguishing between benevolent and malevolent miners
+        if(data.equals("Valid data"))
+            return true;
+        else
+            return false;
+    }
     public String calculateBlockHash() {
         String dataToHash = previousHash + Long.toString(timeStamp) + Integer.toString(validator) + data;
-        MessageDigest digest = null;
+        MessageDigest digest;
         byte[] bytes = null;
         try {
             digest = MessageDigest.getInstance("SHA-256");
             bytes = digest.digest(dataToHash.getBytes("UTF-8"));
-        } catch (NoSuchAlgorithmException | UnsupportedEncodingException ex) {
-            logger.log(Level.SEVERE, ex.getMessage());
+        } catch (Exception e) {
+            System.out.println("Got exception " + e);
         }
         StringBuffer buffer = new StringBuffer();
-        for (byte b : bytes) {
-            buffer.append(String.format("%02x", b));
+        for (int i = 0; i < bytes.length; i++) {
+            buffer.append(String.format("%02x", bytes[i]));
         }
         return buffer.toString();
     }
 
-    public boolean valid(String previous){
-        return hash.equals(calculateBlockHash())
-                && previousHash.equals(previous);
-    }
-
+    @Override
     public String toString() {
         return "Block{" +
                 "hash='" + hash + '\'' +
@@ -53,18 +68,72 @@ public class Block {
                 ", data='" + data + '\'' +
                 ", timeStamp=" + timeStamp + '\'' +
                 ", validator=" + validator + '\'' +
+                ", miner=" + miner + '\'' +
                 '}';
     }
 
     public String getHash() {
-        return this.hash;
+        return hash;
+    }
+
+    public void setHash(String hash) {
+        this.hash = hash;
     }
 
     public String getPreviousHash() {
-        return this.previousHash;
+        return previousHash;
     }
 
-    public void setData(String data) {
+    public void setPreviousHash(String previousHash) {
+        this.previousHash = previousHash;
+    }
+
+    public long getTimeStamp() {
+        return timeStamp;
+    }
+
+    public void setTimeStamp(long timeStamp) {
+        this.timeStamp = timeStamp;
+    }
+
+    public Block getPrevious() {
+        return previous;
+    }
+
+    public void setPrevious(Block previous) {
+        this.previous = previous;
+    }
+
+    public Block getNext() {
+        return next;
+    }
+
+    public void setNext(Block next) {
+        this.next=next;
+    }
+
+    public String getData(){
+        return data;
+    }
+
+    public void setData(String data){
         this.data = data;
+    }
+
+    public int getValidator() {
+        return validator;
+    }
+
+    public void setValidator(int n) {
+        Random random = new Random();
+        this.validator = random.nextInt(n);
+    }
+
+    public int getMiner() {
+        return miner;
+    }
+
+    public void setMiner(int miner) {
+        this.miner = miner;
     }
 }
